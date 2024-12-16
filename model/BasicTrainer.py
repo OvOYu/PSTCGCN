@@ -7,6 +7,7 @@ import numpy as np
 import torch
 from lib.logger import get_logger
 from lib.metrics import All_Metrics
+import random
 
 
 class Trainer(object):
@@ -99,7 +100,8 @@ class Trainer(object):
             self.lr_scheduler.step()
         return train_epoch_loss
 
-    def train(self):
+    def train(self, seed):
+        setup_seed(seed)
         best_model = None
         best_loss = float('inf')
         not_improved_count = 0
@@ -213,3 +215,13 @@ class Trainer(object):
         :return:
         """
         return k / (k + math.exp(global_step / k))
+
+def setup_seed(seed):
+    random.seed(seed)
+    os.environ['PYTHONHASHSEED'] = str(seed)  # 为了禁止hash随机化，使得实验可复现
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)  # if you are using multi-GPU.
+    torch.backends.cudnn.benchmark = False
+    torch.backends.cudnn.deterministic = True

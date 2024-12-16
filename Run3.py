@@ -158,15 +158,7 @@ current_dir = os.path.dirname(os.path.realpath(__file__))
 log_dir = os.path.join(current_dir,'experiments', args.dataset, logdir_name)
 args.log_dir = log_dir
 
-def setup_seed(seed):
-    random.seed(seed)
-    os.environ['PYTHONHASHSEED'] = str(seed)  # 为了禁止hash随机化，使得实验可复现
-    np.random.seed(seed)
-    torch.manual_seed(seed)
-    torch.cuda.manual_seed(seed)
-    torch.cuda.manual_seed_all(seed)  # if you are using multi-GPU.
-    torch.backends.cudnn.benchmark = False
-    torch.backends.cudnn.deterministic = True
+
 def criterion(pred, true):
     return loss(pred, true)
     return 1 / 2 * loss(pred, true) + 1 / 2 * loss(pred[:, 11, ...], true[:, 11, ...])
@@ -178,10 +170,9 @@ seeds = random.sample(range(0, 2147483647), 5)
 
 if args.mode == 'train':
     for seed in seeds:
-        setup_seed(seed)
-        trainer.train()
+        trainer.train(seed)
 elif args.mode == 'test':
-    path = 'experiments/PEMSD4/cheb_k2_embed_dim200_lr0.003_loss_funcSmoothL1Losscurrent_time20220501084731/best_model.pth'
+    path = 'best_model.pth'
     print("Load saved model")
     trainer.test(model, trainer.args, test_loader, scaler, trainer.logger, path)
 else:
